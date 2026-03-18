@@ -1,4 +1,5 @@
 from fastapi import FastAPI, APIRouter
+from fastapi.middleware.cors import CORSMiddleware
 
 from database import init_db
 from dotenv import load_dotenv
@@ -8,6 +9,15 @@ from routers import auth, folders, files, sharing, dashboard
 app = FastAPI()
 
 load_dotenv()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+    expose_headers=["Content-Disposition"],
+)
 
 # Create tables in the database
 init_db()

@@ -67,3 +67,19 @@ class FilePermission(SQLModel, table=True):
         sa_column=Column(DateTime(timezone=True), nullable=True)
     )
 
+
+class FolderPermission(SQLModel, table=True):
+    __tablename__ = "folder_permissions"
+    id: int = Field(default=None, primary_key=True)
+    folder_id: int = Field(
+        sa_column=Column(ForeignKey("folders.id", ondelete="CASCADE"), nullable=False, unique=True)
+    )
+    access_type: str = Field(
+        sa_column=Column(Enum('only_me', 'anyone_with_link', 'timed_access', name='access_type_folder_enum'), server_default='only_me', nullable=False)
+    )
+    share_token: Optional[str] = None
+    expiry_time: Optional[datetime] = Field(
+        default=None,
+        sa_column=Column(DateTime(timezone=True), nullable=True)
+    )
+

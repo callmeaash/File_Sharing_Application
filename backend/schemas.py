@@ -41,7 +41,8 @@ class AccessCreate(BaseModel):
 
 
 class FileAccess(BaseModel):
-    share_token: str
+    access_type: str
+    share_token: Optional[str] = None
     expiry_time: Optional[datetime] = None
 
     class Config:

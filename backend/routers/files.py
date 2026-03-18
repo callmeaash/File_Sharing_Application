@@ -112,7 +112,7 @@ def download_file_by_id(file_id: int, session: SessionDep, current_user: Current
     )
 
 
-@router.delete("{file_id}", status_code=status.HTTP_200_OK)
+@router.delete("/{file_id}", status_code=status.HTTP_200_OK)
 def delete_file(file_id: int, session: SessionDep, current_user: CurrentUserDep):
     file = session.exec(
         select(UserFile)

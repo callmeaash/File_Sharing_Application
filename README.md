@@ -1,22 +1,31 @@
-# File Sharing Application Backend
+# FileVault (File Management System)
 
-A FastAPI-based file sharing service that allows users to upload, manage, organize, and securely share files with flexible access controls.
+A full-stack file sharing and management application featuring a Google Drive-like Vue 3 frontend and a robust FastAPI backend. It allows users to upload, manage, organize, and securely share both files and folders with flexible access controls.
 
 ## Features
 
-- **User Authentication**: Secure user registration and login with JWT token-based authentication
-- **File Management**: Upload, download, and delete files with automatic duplicate handling
-- **Folder Organization**: Create, rename, and delete folders with hierarchical structure support
-- **File Sharing**: Share files with multiple access control options:
-  - Private (only me)
-  - Public link sharing (anyone with link)
-  - Time-limited access (automatic expiration)
-- **Dashboard Analytics**: Track total files, storage usage, and download counts
-- **Error Handling**: Comprehensive database error handling with specific error messages
-- **Per-User Storage**: Isolated storage directories for each user
+- **Google Drive-like UI**: A clean, monochrome interface built with Vue 3 and Tailwind CSS v4.
+- **User Authentication**: Secure user registration and login with JWT token-based authentication.
+- **File Management**: Upload (including drag-and-drop support), download, and delete files.
+- **Folder Organization**: Create, rename, delete, and navigate hierarchical folder structures.
+- **Secure Sharing (Files & Folders)**:
+  - **Private (Only Me)**: Restricted access to the owner.
+  - **Public Link (Anyone with link)**: Generate shareable links for public access without authentication.
+  - **Timed Access**: Generate links that automatically expire after a set duration (minutes, hours, days).
+  - *Recursive permissions ensures that sharing a folder correctly applies access to all its contents.*
+- **Dashboard Analytics**: Track total files, overall storage usage, and total download counts.
+- **Per-User Storage**: Isolated secure storage directories for each user.
 
 ## Tech Stack
 
+### Frontend
+- **Framework**: Vue 3 (Composition API)
+- **Routing**: Vue Router
+- **Styling**: Tailwind CSS v4
+- **HTTP Client**: Axios
+- **Build Tool**: Vite
+
+### Backend
 - **Framework**: FastAPI
 - **Database**: SQLModel with SQLAlchemy ORM
 - **Authentication**: JWT (JSON Web Tokens) with OAuth2
@@ -25,218 +34,76 @@ A FastAPI-based file sharing service that allows users to upload, manage, organi
 
 ## Project Structure
 
-```
-backend/
-├── main.py                    # FastAPI app initialization and router setup
-├── auth.py                    # JWT authentication logic and dependencies
-├── database.py                # Database connection and session management
-├── models.py                  # SQLModel database models
-├── schemas.py                 # Pydantic request/response models
-├── utils.py                   # Utility functions (password hashing)
-├── exceptions.py              # Custom error handling and decorators
-├── database_operations.py      # Centralized database operations
-├── routers/
-│   ├── auth.py               # User registration and login endpoints
-│   ├── files.py              # File upload, download, and deletion endpoints
-│   ├── folders.py            # Folder management endpoints
-│   ├── sharing.py            # File sharing and access control endpoints
-│   └── dashboard.py          # User dashboard analytics endpoints
-└── uploads/                   # User file storage (auto-created)
-```
-
-## API Endpoints
-
-### Authentication (`/auth`)
-- `POST /auth/register` - Register a new user
-- `POST /auth/login` - Login and receive JWT token
-
-### Files (`/files`)
-- `POST /files/` - Upload a file (supports optional folder_id)
-- `GET /files/` - Get all user files
-- `GET /files/{folder_id}/files` - Get files in a specific folder
-- `GET /files/{file_id}` - Download file by ID
-- `DELETE /files/{file_id}` - Delete a file
-
-### Folders (`/folders`)
-- `POST /folders/` - Create a new folder
-- `GET /folders/` - Get all user folders
-- `PATCH /folders/{folder_id}` - Rename a folder
-- `DELETE /folders/{folder_id}` - Delete a folder
-
-### File Sharing (`/share`)
-- `PATCH /share/{file_id}/access` - Change file access permissions
-- `GET /share/{token}` - Download file using share token
-
-### Dashboard (`/dashboard`)
-- `GET /dashboard/dashboard` - Get user analytics (total files, storage, downloads)
-
-## Database Models
-
-### User
-```python
-- id: int (primary key)
-- email: str (unique)
-- password: str (hashed)
-- files: List[UserFile] (relationship)
-- folders: List[Folder] (relationship)
-```
-
-### UserFile
-```python
-- id: int (primary key)
-- owner_id: int (foreign key)
-- folder_id: Optional[int] (foreign key)
-- filename: str
-- filepath: str
-- filesize: int
-- upload_date: datetime
-- mime_type: str
-- download_count: int
-```
-
-### Folder
-```python
-- id: int (primary key)
-- owner_id: int (foreign key)
-- name: str
-- created_at: datetime
-- parent_id: Optional[int] (self-referencing foreign key for hierarchy)
-- files: List[UserFile] (relationship)
-```
-
-### FilePermission
-```python
-- id: int (primary key)
-- file_id: int (foreign key, unique)
-- access_type: str (only_me, anyone_with_link, timed_access)
-- share_token: Optional[str]
-- expiry_time: Optional[datetime]
+```text
+File_Management_System/
+├── backend/                   # FastAPI Server
+│   ├── main.py                # App initialization and router setup
+│   ├── models.py              # SQLModel database models
+│   ├── schemas.py             # Pydantic request/response models
+│   ├── database_operations.py # Centralized database CRUD operations
+│   ├── routers/               # API endpoint definitions (auth, files, folders, sharing, dashboard)
+│   └── uploads/               # Auto-generated user file storage directory
+└── frontend/                  # Vue 3 Client Application
+    ├── index.html             # Main HTML entry point
+    ├── vite.config.js         # Vite bundler configuration
+    ├── package.json           # Frontend dependencies
+    └── src/
+        ├── main.js            # Vue application setup
+        ├── router.js          # Client-side routing definitions
+        ├── api.js             # Axios instance with auth interceptors
+        ├── style.css          # Tailwind and global CSS
+        ├── components/        # Reusable UI (Sidebar, FolderCard, FileCard, ShareModal, etc.)
+        └── views/             # Page components (Login, Drive, Dashboard, SharedFolderView, etc.)
 ```
 
 ## Setup Instructions
 
-### Prerequisites
-- Python 3.8+
-- SQLite or PostgreSQL database
+### 1. Requirements
+- Node.js (v18+)
+- Python (3.8+)
 
-### Installation
+### 2. Backend Setup
+Navigate to the backend directory and set up the Python environment:
 
-1. **Clone the repository**
 ```bash
-git clone <repository-url>
 cd backend
-```
 
-2. **Create a virtual environment**
-```bash
+# Create a virtual environment
 python -m venv venv
 source venv/bin/activate  # On Windows: venv\Scripts\activate
-```
 
-3. **Install dependencies**
-```bash
-pip install fastapi uvicorn sqlmodel sqlalchemy python-jose[cryptography] passlib[bcrypt] python-dotenv
-```
+# Install dependencies
+pip install -r requirements.txt
 
-4. **Configure environment variables**
+# Configure environment variables
+# Create a .env file in the backend directory:
+echo "DATABASE_URL=sqlite:///./test.db" > .env
+echo "SECRET_KEY=your-secret-key-here" >> .env
+echo "ALGORITHM=HS256" >> .env
+echo "ACCESS_TOKEN_EXPIRE_MINUTES=1440" >> .env
 
-Create a `.env` file in the backend directory:
-```
-DATABASE_URL=sqlite:///./test.db
-SECRET_KEY=your-secret-key-here-change-in-production
-ALGORITHM=HS256
-ACCESS_TOKEN_EXPIRE_MINUTES=30
-```
-
-For production with PostgreSQL:
-```
-DATABASE_URL=postgresql://user:password@localhost/dbname
-```
-
-5. **Run the application**
-```bash
+# Run the backend development server
 uvicorn main:app --reload
 ```
 
-The API will be available at `http://localhost:8000`
+### 3. Frontend Setup
+Open a new terminal, navigate to the frontend directory, and start the development server:
 
-## Usage Examples
-
-### Register a User
 ```bash
-curl -X POST "http://localhost:8000/auth/register" \
-  -H "Content-Type: application/json" \
-  -d '{"email": "user@example.com", "password": "password123"}'
+cd frontend
+
+# Install Node dependencies
+npm install
+
+# Run the frontend development server
+npm run dev
 ```
 
-### Login
-```bash
-curl -X POST "http://localhost:8000/auth/login" \
-  -H "Content-Type: application/x-www-form-urlencoded" \
-  -d "username=user@example.com&password=password123"
-```
-
-### Upload a File
-```bash
-curl -X POST "http://localhost:8000/files/" \
-  -H "Authorization: Bearer <token>" \
-  -F "file=@/path/to/file.txt"
-```
-
-### Create a Folder
-```bash
-curl -X POST "http://localhost:8000/folders/" \
-  -H "Authorization: Bearer <token>" \
-  -H "Content-Type: application/json" \
-  -d '{"name": "My Folder"}'
-```
-
-### Share a File with Time Limit
-```bash
-curl -X PATCH "http://localhost:8000/share/1/access" \
-  -H "Authorization: Bearer <token>" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "access_type": "timed_access",
-    "time_unit": "hours",
-    "time_value": 24
-  }'
-```
-
-### Get Dashboard Analytics
-```bash
-curl -X GET "http://localhost:8000/dashboard/dashboard" \
-  -H "Authorization: Bearer <token>"
-```
-
-## Security Features
-
-- **Password Hashing**: All passwords are hashed using Bcrypt
-- **JWT Authentication**: Token-based authentication with expiration
-- **Authorization Checks**: File and folder operations are restricted to owners
-- **Unique Constraints**: Email uniqueness and folder name-parent-owner combinations
-- **Secure Sharing**: Tokens are generated using cryptographically secure random strings
-- **Error Handling**: Detailed error logging without exposing sensitive information
-
-## Error Handling
-
-The application includes comprehensive error handling for:
-- Database integrity violations (duplicate emails, constraint violations)
-- Foreign key violations (referencing non-existent resources)
-- Authentication and authorization failures
-- File not found errors
-- Connection and timeout issues
-
-All errors return appropriate HTTP status codes with descriptive messages.
-
-## Key Design Patterns
-
-- **Dependency Injection**: FastAPI's dependency system for session and user management
-- **Custom Decorators**: `@handle_db_errors` for centralized error handling
-- **Relationships**: SQLModel relationships for easy data access
-- **Type Hints**: Full type annotation for better code clarity and IDE support
-
-
-## Support
-
-For issues or questions, please create an issue in the repository or contact the development team.
+## Key API Endpoints
+- **Authentication**: `POST /auth/register`, `POST /auth/login`
+- **Files**: `POST /files/` (Upload), `DELETE /files/{id}`, `GET /files/{id}` (Download)
+- **Folders**: `POST /folders/`, `GET /folders/`, `PATCH /folders/{id}`
+- **Sharing**: 
+  - `PATCH /share/file/{id}/access`, `PATCH /share/folder/{id}/access`
+  - `GET /share/file/{token}`, `GET /share/folder/{token}` (Public retrieval)
+- **Dashboard**: `GET /dashboard/dashboard`

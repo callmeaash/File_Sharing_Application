@@ -1,5 +1,7 @@
-from models import User, UserFile, Folder, FilePermission
+from models import User, UserFile, Folder, FilePermission, FolderPermission
 from typing import Optional
+import secrets
+from datetime import datetime
 from sqlmodel import Session, select
 from exceptions import handle_db_errors
 from utils import verify_password
@@ -63,6 +65,46 @@ class DatabaseOperations:
         self.session.commit()
         self.session.refresh(permission)
         return permission
+    
+    @handle_db_errors("folder permission update")
+    def update_folder_permission(self, permission: FolderPermission) -> FolderPermission:
+        self.session.add(permission)
+        self.session.commit()
+        self.session.refresh(permission)
+        return permission
+    
+    @handle_db_errors("recursive permission update")
+    def apply_folder_permissions_recursively(self, folder_id: int, access_type: str, expiry_time: Optional[datetime] = None) -> None:
+        """Recursively apply access permissions to all nested folders and files."""
+
+        files = self.session.exec(select(UserFile).where(UserFile.folder_id == folder_id)).all()
+        for file in files:
+            file_perm = self.session.exec(select(FilePermission).where(FilePermission.file_id == file.id)).first()
+            if not file_perm:
+                file_perm = FilePermission(file_id=file.id)
+                self.session.add(file_perm)
+            
+            file_perm.access_type = access_type
+            file_perm.expiry_time = expiry_time
+            if access_type != 'only_me' and not file_perm.share_token:
+                file_perm.share_token = secrets.token_urlsafe(32)
+            
+        subfolders = self.session.exec(select(Folder).where(Folder.parent_id == folder_id)).all()
+        for subfolder in subfolders:
+            folder_perm = self.session.exec(select(FolderPermission).where(FolderPermission.folder_id == subfolder.id)).first()
+            if not folder_perm:
+                folder_perm = FolderPermission(folder_id=subfolder.id)
+                self.session.add(folder_perm)
+            
+            folder_perm.access_type = access_type
+            folder_perm.expiry_time = expiry_time
+            if access_type != 'only_me' and not folder_perm.share_token:
+                folder_perm.share_token = secrets.token_urlsafe(32)
+                
+            # Recursive call for the subfolder
+            self.apply_folder_permissions_recursively(subfolder.id, access_type, expiry_time)
+            
+        self.session.commit()
     
     @handle_db_errors("user authentication")
     def authenticate_user(self, email: str, password: str) -> Optional[User]:
