@@ -13,7 +13,13 @@ const loading = ref(false)
 const error = ref('')
 
 async function createFolder() {
-  if (!folderName.value.trim()) return
+  const name = folderName.value.trim()
+  if (!name) return
+
+  if (name.length > 255) {
+    error.value = 'Folder name cannot exceed 255 characters'
+    return
+  }
   loading.value = true
   error.value = ''
 

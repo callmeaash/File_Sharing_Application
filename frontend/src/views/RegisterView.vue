@@ -18,6 +18,11 @@ async function handleRegister() {
     return
   }
 
+  if (password.value.length < 8) {
+    error.value = 'Password must be at least 8 characters long.'
+    return
+  }
+
   loading.value = true
 
   try {

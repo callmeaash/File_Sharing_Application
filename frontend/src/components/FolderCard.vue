@@ -18,8 +18,13 @@ function startRename() {
 }
 
 function submitRename() {
-  if (newName.value.trim() && newName.value !== props.folder.name) {
-    emit('rename', newName.value.trim())
+  const name = newName.value.trim()
+  if (name && name !== props.folder.name) {
+    if (name.length > 255) {
+      alert('Folder name cannot exceed 255 characters')
+      return
+    }
+    emit('rename', name)
   }
   isRenaming.value = false
 }

@@ -17,9 +17,22 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response && error.response.status === 401) {
-      localStorage.removeItem('access_token')
-      router.push('/login')
+    if (error.response) {
+      if (error.response.status === 401) {
+        localStorage.removeItem('access_token')
+        router.push('/login')
+      } else if (error.response.status === 422) {
+        // Parse Pydantic validation errors
+        const detail = error.response.data.detail
+        if (Array.isArray(detail)) {
+          // Ex: "Field 'email': Invalid email format"
+          const messages = detail.map(d => {
+            const field = d.loc && d.loc.length > 1 ? d.loc[d.loc.length - 1] : ''
+            return field ? `${d.msg}` : d.msg
+          })
+          error.response.data.detail = messages.join(', ')
+        }
+      }
     }
     return Promise.reject(error)
   }

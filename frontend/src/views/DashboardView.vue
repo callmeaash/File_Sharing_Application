@@ -29,7 +29,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="p-6 lg:p-10 max-w-5xl">
+  <div class="p-4 sm:p-6 lg:p-10 max-w-5xl">
     <h1 class="text-2xl font-semibold text-[var(--color-text)] mb-1">Dashboard</h1>
     <p class="text-sm text-[var(--color-text-muted)] mb-8">Overview of your storage</p>
 

@@ -5,6 +5,15 @@ import { useRoute, useRouter } from 'vue-router'
 const route = useRoute()
 const router = useRouter()
 
+const props = defineProps({
+  isOpen: {
+    type: Boolean,
+    default: false
+  }
+})
+
+const emit = defineEmits(['close'])
+
 const navItems = [
   {
     name: 'My Drive',
@@ -29,7 +38,18 @@ function logout() {
 </script>
 
 <template>
-  <aside class="fixed left-0 top-0 bottom-0 w-64 bg-[var(--color-surface)] border-r border-[var(--color-border)] flex flex-col z-30">
+  <!-- Mobile Overlay -->
+  <div
+    v-if="isOpen"
+    @click="emit('close')"
+    class="fixed inset-0 bg-black/40 backdrop-blur-sm z-30 lg:hidden"
+  ></div>
+
+  <!-- Sidebar -->
+  <aside 
+    class="fixed left-0 top-0 bottom-0 w-64 bg-[var(--color-surface)] border-r border-[var(--color-border)] flex flex-col z-40 transition-transform duration-300 ease-in-out lg:translate-x-0"
+    :class="isOpen ? 'translate-x-0' : '-translate-x-full'"
+  >
     <!-- Logo -->
     <div class="px-6 py-6 flex items-center gap-3">
       <div class="w-9 h-9 bg-[var(--color-text)] rounded-xl flex items-center justify-center">
@@ -41,12 +61,12 @@ function logout() {
       <span class="text-lg font-semibold text-[var(--color-text)] tracking-tight">FileVault</span>
     </div>
 
-    <!-- Navigation -->
     <nav class="flex-1 px-3 mt-2">
       <router-link
         v-for="item in navItems"
         :key="item.path"
         :to="item.path"
+        @click="emit('close')"
         class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium mb-1 transition-colors"
         :class="isActive(item.path)
           ? 'bg-[var(--color-bg)] text-[var(--color-text)]'

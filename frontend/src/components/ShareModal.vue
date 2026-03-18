@@ -52,6 +52,11 @@ async function updateAccess() {
     }
 
     if (accessType.value === 'timed_access') {
+      if (timeValue.value <= 0) {
+        error.value = 'Time value must be greater than 0'
+        loading.value = false
+        return
+      }
       payload.time_unit = timeUnit.value
       payload.time_value = timeValue.value
     }

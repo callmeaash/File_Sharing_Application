@@ -42,7 +42,18 @@ async function uploadFiles() {
   error.value = ''
   progress.value = 0
 
-  try {
+  for (const file of files.value) {
+    if (file.size === 0) {
+      error.value = `File "${file.name}" is empty (0 bytes)`
+      return
+    }
+    if (file.name.length > 255) {
+      error.value = `File name "${file.name}" is too long`
+      return
+    }
+  }
+
+  loading.value = true
     for (let i = 0; i < files.value.length; i++) {
       const formData = new FormData()
       formData.append('file', files.value[i])

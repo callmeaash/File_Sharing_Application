@@ -148,9 +148,9 @@ onMounted(loadContent)
 </script>
 
 <template>
-  <div class="p-6 lg:p-10 max-w-6xl">
+  <div class="p-4 sm:p-6 lg:p-10 max-w-6xl">
     <!-- Header -->
-    <div class="flex items-center justify-between mb-2">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-2">
       <h1 class="text-2xl font-semibold text-[var(--color-text)]">My Drive</h1>
       <div class="flex items-center gap-2">
         <button
