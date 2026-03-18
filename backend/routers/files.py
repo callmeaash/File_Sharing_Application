@@ -33,7 +33,18 @@ def upload_file(session: SessionDep, current_user: CurrentUserDep, file: UploadF
     user_dir = os.path.join("uploads", str(current_user.id))
     os.makedirs(user_dir, exist_ok=True)
 
-    filename = file.filename.replace(" ", "_").strip()
+    filename = file.filename.replace(" ", "_").strip() if file.filename else ""
+    if not filename:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Filename is missing or invalid"
+        )
+    if len(filename) > 255:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Filename is too long"
+        )
+
     file_path = os.path.join(user_dir, filename)
 
     # Incase the filename already exists
@@ -46,6 +57,12 @@ def upload_file(session: SessionDep, current_user: CurrentUserDep, file: UploadF
         shutil.copyfileobj(file.file, buffer)
 
     file_size = os.path.getsize(file_path)
+    if file_size == 0:
+        os.remove(file_path)
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="File is empty"
+        )
 
     new_file = UserFile(
             owner_id=current_user.id,

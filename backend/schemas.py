@@ -1,5 +1,5 @@
-from pydantic import BaseModel
-from typing import Optional
+from pydantic import BaseModel, EmailStr, Field, validator
+from typing import Optional, Literal
 from datetime import datetime
 
 class TokenData(BaseModel):
@@ -7,8 +7,8 @@ class TokenData(BaseModel):
 
 
 class UserRead(BaseModel):
-    email: str
-    password: str
+    email: EmailStr
+    password: str = Field(..., min_length=8, description="Password must be at least 8 characters long")
 
 
 class Token(BaseModel):
@@ -17,8 +17,14 @@ class Token(BaseModel):
 
 
 class FolderCreate(BaseModel):
-    name: str
+    name: str = Field(..., min_length=1, max_length=255, description="Folder name cannot be empty or exceed 255 characters")
     parent_id: Optional[int] = None
+
+    @validator('name')
+    def name_must_not_be_whitespace(cls, v):
+        if not v.strip():
+            raise ValueError('Folder name cannot be empty or just whitespace')
+        return v.strip()
 
 
 class FolderRead(BaseModel):
@@ -31,13 +37,19 @@ class FolderRead(BaseModel):
 
 
 class FolderRename(BaseModel):
-    name: str
+    name: str = Field(..., min_length=1, max_length=255)
+
+    @validator('name')
+    def name_must_not_be_whitespace(cls, v):
+        if not v.strip():
+            raise ValueError('Folder name cannot be empty or just whitespace')
+        return v.strip()
 
 
 class AccessCreate(BaseModel):
-    access_type: str
-    time_unit: Optional[str] = None
-    time_value: Optional[int] = None
+    access_type: Literal['only_me', 'anyone_with_link', 'timed_access']
+    time_unit: Optional[Literal['minutes', 'hours', 'days']] = None
+    time_value: Optional[int] = Field(None, gt=0, description="Time value must be positive")
 
 
 class FileAccess(BaseModel):
