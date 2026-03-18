@@ -2,7 +2,7 @@ import axios from 'axios'
 import router from './router'
 
 const api = axios.create({
-  baseURL: 'http://localhost:8000',
+  baseURL: import.meta.env.API_URL,
 })
 
 api.interceptors.request.use((config) => {
