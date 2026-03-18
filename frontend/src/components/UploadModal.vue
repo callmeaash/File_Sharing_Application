@@ -53,7 +53,7 @@ async function uploadFiles() {
     }
   }
 
-  loading.value = true
+  try {
     for (let i = 0; i < files.value.length; i++) {
       const formData = new FormData()
       formData.append('file', files.value[i])
