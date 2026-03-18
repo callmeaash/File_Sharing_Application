@@ -11,13 +11,12 @@ app = FastAPI()
 
 load_dotenv()
 
-frontend_url = getenv("FRONTEND_URL")
-if not frontend_url:
-    frontend_url = "http://localhost:5173"
+frontend_url = getenv("FRONTEND_URL", "http://localhost:5173")
+origins = [url.strip().rstrip("/") for url in frontend_url.split(",")]
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[frontend_url],
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
